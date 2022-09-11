@@ -62,6 +62,7 @@ set(components
   ring
   timer
   kni  
+  telemetry
 )
 
 # for collecting dpdk library targets, it will be used when defining dpdk::dpdk

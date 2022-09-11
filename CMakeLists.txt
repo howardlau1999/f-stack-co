@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 project(fstackco)
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_STATIC_LIBRARY_SUFFIX}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(dpdk REQUIRED)
 find_package(OpenSSL REQUIRED)
