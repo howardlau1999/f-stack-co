@@ -4,15 +4,17 @@
 #include <ff_event.h>
 #include <mutex>
 
+#include "f-stack-co/error.h"
+
 namespace fstackco {
 
 event_loop::event_loop(size_t max_events)
     : kq_(ff_kqueue()), events_(max_events) {
-  assert(kq_ > 0);
+  check_errno(kq_, "failed to create kqueue");
 }
 
 int event_loop::ff_run(void *self) {
-  reinterpret_cast<event_loop*>(self)->poll();
+  reinterpret_cast<event_loop *>(self)->poll();
   return 0;
 }
 
@@ -47,7 +49,7 @@ void event_loop::register_read(std::shared_ptr<socket> fd) {
   struct kevent event;
   EV_SET(&event, fd->fd(), EVFILT_READ, EV_ADD, EV_ONESHOT, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
-  assert(ret == 0);
+  check_errno(ret, "failed to register read event");
   std::lock_guard lock(mutex_);
   sockets_.emplace(fd->fd(), fd);
 }
@@ -56,7 +58,7 @@ void event_loop::register_write(std::shared_ptr<socket> fd) {
   struct kevent event;
   EV_SET(&event, fd->fd(), EVFILT_WRITE, EV_ADD, EV_ONESHOT, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
-  assert(ret == 0);
+  check_errno(ret, "failed to register write event");
   std::lock_guard lock(mutex_);
   sockets_.emplace(fd->fd(), fd);
 }
