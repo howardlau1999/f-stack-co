@@ -28,13 +28,13 @@ else()
 endif()
 
 set(components
-  bus_pci
   net_bond
   cfgfile
   cmdline
   ethdev
   mbuf
   eal
+  bus_pci
   hash
   kvargs
   mempool
@@ -62,6 +62,7 @@ set(components
   ring
   timer
   kni  
+  rcu
   telemetry
 )
 

@@ -32,7 +32,7 @@ set(FSTACKCO_SOURCE_FILES
 )
 
 add_library(fstackco STATIC ${FSTACKCO_SOURCE_FILES})
-set(FSTACKCO_LINK_LIBRARIES OpenSSL::SSL dpdk::dpdk fstack)
+set(FSTACKCO_LINK_LIBRARIES OpenSSL::SSL -Wl,--whole-archive dpdk::dpdk fstack -Wl,--no-whole-archive)
 list(APPEND
   FSTACKCO_COMPILE_OPTIONS
   PUBLIC
