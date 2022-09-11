@@ -34,7 +34,6 @@ set(components
   ethdev
   mbuf
   eal
-  bus_pci
   hash
   kvargs
   mempool
@@ -43,7 +42,6 @@ set(components
   pci
   net_af_packet
   net_bnxt
-  net_bond
   net_cxgbe
   net_e1000
   net_ena
@@ -60,6 +58,7 @@ set(components
   net_hinic
   bus_vdev
   bus_auxiliary
+  bus_pci
   ring
   timer
   kni  

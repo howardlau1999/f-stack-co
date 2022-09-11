@@ -2,11 +2,10 @@ cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 project(fstackco)
 set(CMAKE_CXX_STANDARD 20)
 
-# set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_STATIC_LIBRARY_SUFFIX}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(dpdk REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(ibverbs)
+find_package(mlx5)
 
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
@@ -33,9 +32,10 @@ set(FSTACKCO_SOURCE_FILES
 )
 
 add_library(fstackco STATIC ${FSTACKCO_SOURCE_FILES})
-set(FSTACKCO_LINK_LIBRARIES OpenSSL::SSL -Wl,--whole-archive dpdk::dpdk fstack -Wl,--no-whole-archive)
-if (ibverbs_FOUND)
-  list(APPEND FSTACKCO_LINK_LIBRARIES ibverbs mlx5)
+set(FSTACKCO_LINK_LIBRARIES OpenSSL::SSL dpdk::dpdk -Wl,--whole-archive fstack -Wl,--no-whole-archive)
+if (mlx5_FOUND)
+  find_package(ibverbs REQUIRED)
+  list(APPEND FSTACKCO_LINK_LIBRARIES -Wl,--whole-archive dpdk::net_mlx5 -Wl,--no-whole-archive ibverbs mlx5)
 endif ()
 list(APPEND
   FSTACKCO_COMPILE_OPTIONS
