@@ -3,6 +3,7 @@ project(fstackco)
 set(CMAKE_CXX_STANDARD 20)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+find_package(fstack REQUIRED)
 find_package(dpdk REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(mlx5)
