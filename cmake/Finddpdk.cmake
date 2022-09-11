@@ -41,24 +41,25 @@ set(components
   mempool_ring
   net
   pci
-  pmd_af_packet
-  pmd_bnxt
-  pmd_bond
-  pmd_cxgbe
-  pmd_e1000
-  pmd_ena
-  pmd_enic
-  pmd_i40e
-  pmd_ixgbe
-  pmd_mlx5
-  pmd_nfp
-  pmd_qede
-  pmd_ring
-  pmd_sfc_efx
-  pmd_vmxnet3_uio
-  pmd_hns3
-  pmd_hinic
+  net_af_packet
+  net_bnxt
+  net_bond
+  net_cxgbe
+  net_e1000
+  net_ena
+  net_enic
+  net_i40e
+  net_mlx5
+  common_mlx5
+  net_nfp
+  net_qede
+  net_ring
+  net_sfc_efx
+  net_vmxnet3_uio
+  net_hns3
+  net_hinic
   bus_vdev
+  bus_auxiliary
   ring
   timer
   kni  
@@ -88,12 +89,6 @@ foreach(c ${components})
       set_target_properties(${dpdk_lib} PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${dpdk_INCLUDE_DIRS}"
         IMPORTED_LOCATION "${DPDK_rte_${c}_LIBRARY}")
-      if(c STREQUAL pmd_mlx5)
-        find_package(verbs QUIET)
-        if(verbs_FOUND)
-          target_link_libraries(${dpdk_lib} INTERFACE IBVerbs::verbs)
-        endif()
-      endif()
     endif()
     list(APPEND _dpdk_libs ${dpdk_lib})
     list(APPEND dpdk_LIBRARIES ${DPDK_rte_${c}_LIBRARY})
