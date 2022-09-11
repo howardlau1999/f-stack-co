@@ -29,18 +29,17 @@ endif()
 
 set(components
   bus_pci
-  bus_vdev
+  net_bond
   cfgfile
   cmdline
-  eal
   ethdev
+  mbuf
+  eal
   hash
   kvargs
-  mbuf
   mempool
   mempool_ring
   net
-  net_bond
   pci
   pmd_af_packet
   pmd_bnxt
@@ -59,6 +58,7 @@ set(components
   pmd_vmxnet3_uio
   pmd_hns3
   pmd_hinic
+  bus_vdev
   ring
   timer
   kni  
