@@ -23,14 +23,12 @@ bool tcp_connection::read_write_awaitable::await_ready() { return rc_ > 0; }
 void tcp_connection::read_write_awaitable::await_suspend(
     std::coroutine_handle<> h) {
   if (write_) {
-    fd_.set_writable_callback([h, this](...) {
-      fd_.set_writable_callback(nullptr);
+    fd_.set_writable_callback([h](...) {
       h.resume();
     });
     loop_.register_write(fd_);
   } else {
-    fd_.set_readable_callback([h, this](...) {
-      fd_.set_readable_callback(nullptr);
+    fd_.set_readable_callback([h](...) {
       h.resume();
     });
     loop_.register_read(fd_);
@@ -41,8 +39,10 @@ ssize_t tcp_connection::read_write_awaitable::await_resume() {
   if (rc_ < 0) {
     if (write_) {
       rc_ = fd_.write(buf_, n_);
+      fd_.set_writable_callback(nullptr);
     } else {
       rc_ = fd_.read(buf_, n_);
+      fd_.set_readable_callback(nullptr);
     }
   }
   return rc_;
