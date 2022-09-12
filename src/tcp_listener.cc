@@ -34,6 +34,7 @@ void tcp_listener::accept_awaitable::await_suspend(std::coroutine_handle<> h) {
     this->data_ = data;
     h.resume();
   });
+  loop_->register_read(fd_);
 }
 
 std::vector<tcp_connection> tcp_listener::accept_awaitable::await_resume() {
