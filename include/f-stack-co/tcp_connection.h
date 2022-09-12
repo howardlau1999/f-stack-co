@@ -16,25 +16,40 @@ class tcp_connection : public noncopyable {
 
 public:
   class read_write_awaitable {
+  protected:
     event_loop &loop_;
-    socket& fd_;
+    socket &fd_;
     void *buf_;
     size_t n_;
-    bool write_;
     int rc_;
 
   public:
-    read_write_awaitable(event_loop &loop, socket& fd, void *buf, size_t n, bool write);
+    read_write_awaitable(event_loop &loop, socket &fd, void *buf, size_t n);
+  };
+
+  class write_awaitable : public read_write_awaitable {
+  public:
+    write_awaitable(event_loop &loop, socket &fd, void *buf, size_t n);
     bool await_ready();
-    bool await_suspend(std::coroutine_handle<> h);
+    void await_suspend(std::coroutine_handle<> h);
     ssize_t await_resume();
   };
-  tcp_connection(std::shared_ptr<event_loop> loop, ip_address remote_address, socket fd);
+
+  class read_awaitable : public read_write_awaitable {
+  public:
+    read_awaitable(event_loop &loop, socket &fd, void *buf, size_t n);
+    bool await_ready();
+    void await_suspend(std::coroutine_handle<> h);
+    ssize_t await_resume();
+  };
+
+  tcp_connection(std::shared_ptr<event_loop> loop, ip_address remote_address,
+                 socket fd);
   tcp_connection(tcp_connection &&) = default;
-  read_write_awaitable read(void *buf, size_t n);
-  read_write_awaitable write(const void *buf, size_t n);
-  socket& fd();
-  ip_address& remote_address();
+  read_awaitable read(void *buf, size_t n);
+  write_awaitable write(const void *buf, size_t n);
+  socket &fd();
+  ip_address &remote_address();
 };
 
 } // namespace fstackco
