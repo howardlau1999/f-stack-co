@@ -51,20 +51,24 @@ int event_loop::poll() {
 
 void event_loop::register_read(std::shared_ptr<socket> fd) {
   struct kevent event;
+  {
+    std::lock_guard lock(mutex_);
+    sockets_.emplace(fd->fd(), fd);
+  }
   EV_SET(&event, fd->fd(), EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
   check_errno(ret, "failed to register read event");
-  std::lock_guard lock(mutex_);
-  sockets_.emplace(fd->fd(), fd);
 }
 
 void event_loop::register_write(std::shared_ptr<socket> fd) {
   struct kevent event;
+  {
+    std::lock_guard lock(mutex_);
+    sockets_.emplace(fd->fd(), fd);
+  }
   EV_SET(&event, fd->fd(), EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
   check_errno(ret, "failed to register write event");
-  std::lock_guard lock(mutex_);
-  sockets_.emplace(fd->fd(), fd);
 }
 
 } // namespace fstackco
