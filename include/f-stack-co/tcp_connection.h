@@ -26,7 +26,7 @@ public:
   public:
     read_write_awaitable(event_loop &loop, socket& fd, void *buf, size_t n, bool write);
     bool await_ready();
-    void await_suspend(std::coroutine_handle<> h);
+    bool await_suspend(std::coroutine_handle<> h);
     ssize_t await_resume();
   };
   tcp_connection(std::shared_ptr<event_loop> loop, ip_address remote_address, socket fd);

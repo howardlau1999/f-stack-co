@@ -20,19 +20,28 @@ tcp_connection::read_write_awaitable::read_write_awaitable(event_loop &loop,
 
 bool tcp_connection::read_write_awaitable::await_ready() { return rc_ > 0; }
 
-void tcp_connection::read_write_awaitable::await_suspend(
+bool tcp_connection::read_write_awaitable::await_suspend(
     std::coroutine_handle<> h) {
   if (write_) {
+    rc_ = fd_.write(buf_, n_);
+    if (rc_ >= 0) {
+      return false;
+    }
     fd_.set_writable_callback([h](...) {
       h.resume();
     });
     loop_.register_write(fd_);
   } else {
+    rc_ = fd_.read(buf_, n_);
+    if (rc_ >= 0) {
+      return false;
+    }
     fd_.set_readable_callback([h](...) {
       h.resume();
     });
     loop_.register_read(fd_);
   }
+  return true;
 }
 
 ssize_t tcp_connection::read_write_awaitable::await_resume() {
