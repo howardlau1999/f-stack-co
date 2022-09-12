@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
   ff_init(argc, argv);
 
   auto loop = std::make_shared<fstackco::event_loop>();
-
+  http_server(loop).detach();
   ff_run(&fstackco::event_loop::ff_run, &*loop);
   return 0;
 }
