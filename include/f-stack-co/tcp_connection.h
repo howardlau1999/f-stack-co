@@ -21,6 +21,7 @@ public:
     void *buf_;
     size_t n_;
     bool write_;
+    int rc_;
 
   public:
     read_write_awaitable(event_loop &loop, socket& fd, void *buf, size_t n, bool write);

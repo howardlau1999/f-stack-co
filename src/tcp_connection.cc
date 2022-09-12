@@ -6,32 +6,46 @@
 
 namespace fstackco {
 
-tcp_connection::read_write_awaitable::read_write_awaitable(
-    event_loop &loop, socket& fd, void *buf, size_t n,
-    bool write)
-    : loop_(loop), fd_(fd), buf_(buf), n_(n), write_(write) {}
+tcp_connection::read_write_awaitable::read_write_awaitable(event_loop &loop,
+                                                           socket &fd,
+                                                           void *buf, size_t n,
+                                                           bool write)
+    : loop_(loop), fd_(fd), buf_(buf), n_(n), write_(write), rc_(-1) {
+  if (write_) {
+    rc_ = fd_.write(buf_, n_);
+  } else {
+    rc_ = fd_.read(buf_, n_);
+  }
+}
 
-bool tcp_connection::read_write_awaitable::await_ready() { return false; }
+bool tcp_connection::read_write_awaitable::await_ready() { return rc_ > 0; }
 
 void tcp_connection::read_write_awaitable::await_suspend(
     std::coroutine_handle<> h) {
   if (write_) {
-    fd_.set_writable_callback([h](...) { h.resume(); });
+    fd_.set_writable_callback([h, this](...) {
+      fd_.set_writable_callback(nullptr);
+      h.resume();
+    });
     loop_.register_write(fd_);
   } else {
-    fd_.set_readable_callback([h](...) { h.resume(); });
+    fd_.set_readable_callback([h, this](...) {
+      fd_.set_readable_callback(nullptr);
+      h.resume();
+    });
     loop_.register_read(fd_);
   }
 }
 
 ssize_t tcp_connection::read_write_awaitable::await_resume() {
-  if (write_) {
-    fd_.set_readable_callback(nullptr);
-    return fd_.write(buf_, n_);
-  } else {
-    fd_.set_writable_callback(nullptr);
-    return fd_.read(buf_, n_);
+  if (rc_ < 0) {
+    if (write_) {
+      rc_ = fd_.write(buf_, n_);
+    } else {
+      rc_ = fd_.read(buf_, n_);
+    }
   }
+  return rc_;
 }
 
 tcp_connection::tcp_connection(std::shared_ptr<event_loop> loop,
