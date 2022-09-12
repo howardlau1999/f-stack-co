@@ -24,13 +24,13 @@ tcp_listener::tcp_listener(std::shared_ptr<event_loop> loop, uint16_t port,
 }
 
 tcp_listener::accept_awaitable::accept_awaitable(
-    std::shared_ptr<event_loop> loop, std::shared_ptr<socket> fd)
+    std::shared_ptr<event_loop> loop, socket& fd)
     : loop_(loop), fd_(fd), data_(0) {}
 
 bool tcp_listener::accept_awaitable::await_ready() { return false; }
 
 void tcp_listener::accept_awaitable::await_suspend(std::coroutine_handle<> h) {
-  fd_->set_readable_callback([h, this](int64_t data) {
+  fd_.set_readable_callback([h, this](int64_t data) {
     this->data_ = data;
     h.resume();
   });
@@ -42,7 +42,7 @@ std::vector<tcp_connection> tcp_listener::accept_awaitable::await_resume() {
   ip_address remote_address;
   for (int64_t i = 0; i < data_; ++i) {
     int client_fd_ = ff_accept(
-        fd_->fd(),
+        fd_.fd(),
         reinterpret_cast<struct linux_sockaddr *>(&remote_address.ss_),
         &remote_address.len_);
     if (client_fd_ < 0) {
@@ -54,7 +54,7 @@ std::vector<tcp_connection> tcp_listener::accept_awaitable::await_resume() {
 }
 
 tcp_listener::accept_awaitable tcp_listener::accept() {
-  return accept_awaitable(loop_, fd_);
+  return accept_awaitable(loop_, *fd_);
 }
 
 } // namespace fstackco

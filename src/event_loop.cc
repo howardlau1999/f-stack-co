@@ -26,15 +26,13 @@ int event_loop::poll() {
     struct kevent &event = events_[i];
     int fd = (int)event.ident;
     auto sock = [&]() {
-      std::shared_lock lock(mutex_);
       auto it = sockets_.find(fd);
       if (it == sockets_.end()) {
-        return std::shared_ptr<socket>();
+        return (socket *)nullptr;
       }
-      return it->second.lock();
+      return it->second;
     }();
     if (event.flags & EV_EOF) {
-      std::lock_guard lock(mutex_);
       sockets_.erase(fd);
     } else if (event.filter == EVFILT_READ) {
       if (sock) {
@@ -49,24 +47,22 @@ int event_loop::poll() {
   return nr_events;
 }
 
-void event_loop::register_read(std::shared_ptr<socket> fd) {
+void event_loop::register_read(socket &fd) {
   struct kevent event;
   {
-    std::lock_guard lock(mutex_);
-    sockets_.insert_or_assign(fd->fd(), fd);
+    sockets_.insert_or_assign(fd.fd(), &fd);
   }
-  EV_SET(&event, fd->fd(), EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
+  EV_SET(&event, fd.fd(), EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
   check_errno(ret, "failed to register read event");
 }
 
-void event_loop::register_write(std::shared_ptr<socket> fd) {
+void event_loop::register_write(socket &fd) {
   struct kevent event;
   {
-    std::lock_guard lock(mutex_);
-    sockets_.insert_or_assign(fd->fd(), fd);
+    sockets_.insert_or_assign(fd.fd(), &fd);
   }
-  EV_SET(&event, fd->fd(), EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
+  EV_SET(&event, fd.fd(), EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
   check_errno(ret, "failed to register write event");
 }

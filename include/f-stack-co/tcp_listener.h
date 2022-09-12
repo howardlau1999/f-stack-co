@@ -17,11 +17,11 @@ class tcp_listener : public noncopyable {
 public:
   struct accept_awaitable {
     std::shared_ptr<event_loop> loop_;
-    std::shared_ptr<socket> fd_;
+    socket& fd_;
     int64_t data_;
 
   public:
-    accept_awaitable(std::shared_ptr<event_loop> loop, std::shared_ptr<socket> fd);
+    accept_awaitable(std::shared_ptr<event_loop> loop, socket& fd);
     bool await_ready();
     void await_suspend(std::coroutine_handle<> h);
     std::vector<tcp_connection> await_resume();

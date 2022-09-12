@@ -17,13 +17,13 @@ class tcp_connection : public noncopyable {
 public:
   class read_write_awaitable {
     event_loop &loop_;
-    std::shared_ptr<socket> fd_;
+    socket& fd_;
     void *buf_;
     size_t n_;
     bool write_;
 
   public:
-    read_write_awaitable(event_loop &loop, std::shared_ptr<socket> fd, void *buf, size_t n, bool write);
+    read_write_awaitable(event_loop &loop, socket& fd, void *buf, size_t n, bool write);
     bool await_ready();
     void await_suspend(std::coroutine_handle<> h);
     ssize_t await_resume();
