@@ -16,10 +16,10 @@ bool tcp_connection::read_write_awaitable::await_ready() { return false; }
 void tcp_connection::read_write_awaitable::await_suspend(
     std::coroutine_handle<> h) {
   if (write_) {
-    fd_->set_readable_callback([h](...) { h.resume(); });
+    fd_->set_writable_callback([h](...) { h.resume(); });
     loop_.register_write(fd_);
   } else {
-    fd_->set_writable_callback([h](...) { h.resume(); });
+    fd_->set_readable_callback([h](...) { h.resume(); });
     loop_.register_read(fd_);
   }
 }
