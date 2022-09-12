@@ -49,7 +49,7 @@ char html[] = "HTTP/1.1 200 OK\r\n"
 
 fstackco::task<void> handle_http_connection(fstackco::tcp_connection conn) {
   char buf[1024];
-  auto n = co_await conn.read(buf, sizeof(buf));
+  auto n = co_await conn.read(buf, sizeof(buf) - 1);
   if (n <= 0) {
     co_return;
   }
