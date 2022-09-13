@@ -15,7 +15,7 @@ class event_loop : public noncopyable {
   int kq_;
   std::unordered_map<int, socket *> sockets_;
   std::vector<struct kevent> events_;
-  static int ff_run(void *self);
+  static int ff_poll_once(void *self);
 public:
   event_loop(size_t max_events = 128);
   void register_read(socket& fd);

@@ -13,13 +13,13 @@ event_loop::event_loop(size_t max_events)
   check_errno(kq_, "failed to create kqueue");
 }
 
-int event_loop::ff_run(void *self) {
+int event_loop::ff_poll_once(void *self) {
   reinterpret_cast<event_loop *>(self)->poll();
   return 0;
 }
 
 void event_loop::loop() {
-  ::ff_run(&event_loop::ff_run, this);
+  ff_run(&event_loop::ff_poll_once, this);
 }
 
 int event_loop::poll() {
