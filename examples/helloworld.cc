@@ -11,10 +11,9 @@
 #include <sys/types.h>
 
 #include "f-stack-co/event_loop.h"
+#include "f-stack-co/init.h"
 #include "f-stack-co/task.h"
 #include "f-stack-co/tcp_listener.h"
-#include "ff_api.h"
-#include "ff_config.h"
 
 char html[] = "HTTP/1.1 200 OK\r\n"
               "Server: F-Stack\r\n"
@@ -49,11 +48,16 @@ char html[] = "HTTP/1.1 200 OK\r\n"
 
 fstackco::task<void> handle_http_connection(fstackco::tcp_connection conn) {
   char buf[1024];
-  auto n = co_await conn.read(buf, sizeof(buf));
-  if (n <= 0) {
-    co_return;
+  while (true) {
+    auto n = co_await conn.read(buf, sizeof(buf));
+    if (n <= 0) {
+      co_return;
+    }
+    n = co_await conn.write(html, sizeof(html) - 1);
+    if (n <= 0) {
+      co_return;
+    }
   }
-  co_await conn.write(html, sizeof(html) - 1);
 }
 
 fstackco::task<void> http_server(std::shared_ptr<fstackco::event_loop> loop) {
@@ -67,10 +71,9 @@ fstackco::task<void> http_server(std::shared_ptr<fstackco::event_loop> loop) {
 }
 
 int main(int argc, char *argv[]) {
-  ff_init(argc, argv);
-
+  fstackco::init(argc, argv);
   auto loop = std::make_shared<fstackco::event_loop>();
   http_server(loop).detach();
-  ff_run(&fstackco::event_loop::ff_run, &*loop);
+  loop->loop();
   return 0;
 }

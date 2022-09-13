@@ -18,6 +18,10 @@ int event_loop::ff_run(void *self) {
   return 0;
 }
 
+void event_loop::loop() {
+  ::ff_run(&event_loop::ff_run, this);
+}
+
 int event_loop::poll() {
   int nr_events =
       ff_kevent(kq_, nullptr, 0, &events_[0], events_.size(), nullptr);

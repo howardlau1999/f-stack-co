@@ -26,6 +26,7 @@ endif()
 include_directories(include)
 
 set(FSTACKCO_SOURCE_FILES
+  src/init.cc
   src/event_loop.cc
   src/socket.cc
   src/tcp_connection.cc
