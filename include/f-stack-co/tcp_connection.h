@@ -46,6 +46,7 @@ public:
   tcp_connection(std::shared_ptr<event_loop> loop, ip_address remote_address,
                  socket fd);
   tcp_connection(tcp_connection &&) = default;
+  void set_loop(std::shared_ptr<event_loop> loop);
   read_awaitable read(void *buf, size_t n);
   write_awaitable write(const void *buf, size_t n);
   socket &fd();

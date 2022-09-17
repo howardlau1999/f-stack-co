@@ -56,6 +56,10 @@ tcp_connection::read_awaitable tcp_connection::read(void *buf, size_t n) {
   return read_awaitable(*loop_, *fd_, buf, n);
 }
 
+void tcp_connection::set_loop(std::shared_ptr<event_loop> loop) {
+  loop_ = loop;
+}
+
 tcp_connection::write_awaitable tcp_connection::write(const void *buf,
                                                       size_t n) {
   return write_awaitable(*loop_, *fd_, const_cast<void *>(buf), n);
