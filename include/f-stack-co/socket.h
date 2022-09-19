@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <sys/socket.h>
 #include <sys/types.h>
 
 namespace fstackco {
@@ -24,6 +25,7 @@ public:
 
   ssize_t read(void *buffer, size_t length) const;
   ssize_t write(void const *buffer, size_t length) const;
+  int connect(const struct sockaddr *addr, socklen_t addrlen) const;
   int fd() const;
   ~socket();
 };

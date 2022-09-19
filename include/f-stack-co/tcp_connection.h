@@ -43,6 +43,18 @@ public:
     ssize_t await_resume();
   };
 
+  class connect_awaitable {
+    std::shared_ptr<event_loop> loop_;
+    socket fd_;
+    ip_address remote_address_;
+    int rc_;
+  public:
+    connect_awaitable(std::shared_ptr<event_loop> loop, ip_address remote_address);
+    bool await_ready();
+    void await_suspend(std::coroutine_handle<> h);
+    tcp_connection await_resume();
+  };
+
   tcp_connection(std::shared_ptr<event_loop> loop, ip_address remote_address,
                  socket fd);
   tcp_connection(tcp_connection &&) = default;

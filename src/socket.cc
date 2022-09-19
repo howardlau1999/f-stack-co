@@ -55,6 +55,13 @@ ssize_t socket::write(void const *buffer, size_t length) const {
   return ret;
 }
 
+int socket::connect(const struct sockaddr *addr, socklen_t addrlen) const {
+  assert(fd_ > -1);
+  auto ret = ff_connect(
+      fd_, reinterpret_cast<struct linux_sockaddr const *>(addr), addrlen);
+  return ret;
+}
+
 socket::~socket() {
   if (fd_ > 0) [[likely]] {
     ff_close(fd_);

@@ -65,6 +65,30 @@ tcp_connection::write_awaitable tcp_connection::write(const void *buf,
   return write_awaitable(*loop_, *fd_, const_cast<void *>(buf), n);
 }
 
+tcp_connection::connect_awaitable::connect_awaitable(
+    std::shared_ptr<event_loop> loop, ip_address remote_address)
+    : loop_(loop), fd_(AF_INET, SOCK_STREAM, 0),
+      remote_address_(remote_address), rc_(-1) {}
+
+bool tcp_connection::connect_awaitable::await_ready() {
+  return fd_.connect(reinterpret_cast<struct sockaddr *>(&remote_address_.ss_),
+                     remote_address_.len_) == 0;
+}
+
+void tcp_connection::connect_awaitable::await_suspend(
+    std::coroutine_handle<> h) {
+  fd_.set_writable_callback([h, this](...) {
+    rc_ = fd_.connect(reinterpret_cast<struct sockaddr *>(&remote_address_.ss_),
+                      remote_address_.len_);
+    h.resume();
+  });
+  loop_->register_write(fd_);
+}
+
+tcp_connection tcp_connection::connect_awaitable::await_resume() {
+  return tcp_connection(loop_, remote_address_, std::move(fd_));
+}
+
 socket &tcp_connection::fd() { return *fd_; }
 
 ip_address &tcp_connection::remote_address() { return remote_address_; }
