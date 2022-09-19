@@ -18,9 +18,7 @@ int event_loop::ff_poll_once(void *self) {
   return 0;
 }
 
-void event_loop::loop() {
-  ff_run(&event_loop::ff_poll_once, this);
-}
+void event_loop::loop() { ff_run(&event_loop::ff_poll_once, this); }
 
 int event_loop::poll() {
   int nr_events =
@@ -29,15 +27,9 @@ int event_loop::poll() {
   for (int i = 0; i < nr_events; ++i) {
     struct kevent &event = events_[i];
     int fd = (int)event.ident;
-    auto sock = [&]() {
-      auto it = sockets_.find(fd);
-      if (it == sockets_.end()) {
-        return (socket *)nullptr;
-      }
-      return it->second;
-    }();
+    auto sock = reinterpret_cast<socket *>(event.udata);
     if (event.flags & EV_EOF) {
-      sockets_.erase(fd);
+      ::ff_close(fd);
     } else if (event.filter == EVFILT_READ) {
       if (sock) {
         sock->readable_callback(event.data);
@@ -53,19 +45,13 @@ int event_loop::poll() {
 
 void event_loop::register_read(socket &fd) {
   struct kevent event;
-  {
-    sockets_.insert_or_assign(fd.fd(), &fd);
-  }
-  EV_SET(&event, fd.fd(), EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
+  EV_SET(&event, fd.fd(), EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, &fd);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
   check_errno(ret, "failed to register read event");
 }
 
 void event_loop::register_write(socket &fd) {
   struct kevent event;
-  {
-    sockets_.insert_or_assign(fd.fd(), &fd);
-  }
   EV_SET(&event, fd.fd(), EVFILT_WRITE, EV_ADD | EV_ONESHOT, 0, 0, nullptr);
   int ret = ff_kevent(kq_, &event, 1, nullptr, 0, nullptr);
   check_errno(ret, "failed to register write event");
